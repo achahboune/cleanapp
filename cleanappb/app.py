@@ -8,7 +8,8 @@ app = Flask(__name__)
 
 # Configuration des autorisations pour accéder à Google Sheets
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name('C:\\Users\\PC\\Desktop\\metabase\\meta.json', scope)
+# app.py
+creds = ServiceAccountCredentials.from_json_keyfile_name('cleanappb/meta.json', scope)
 client = gspread.authorize(creds)
 
 @app.route('/clean', methods=['POST'])
