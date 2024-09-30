@@ -10,7 +10,7 @@ load_dotenv()
 
 # Initialiser l'application Flask
 app = Flask(__name__)
-CORS(app)
+CORS(app)  # Permettre les requêtes CORS de tous les domaines
 
 # Récupérer le chemin du fichier de clés de service depuis les variables d'environnement
 service_account_file = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
@@ -28,8 +28,8 @@ gc = gspread.authorize(creds)
 def get_data():
     try:
         # Ouvrir la feuille de calcul par son nom
-        spreadsheet = gc.open("nom_de_votre_feuille")
-        worksheet = spreadsheet.sheet1
+        spreadsheet = gc.open("nom_de_votre_feuille")  # Remplacez par le nom de votre feuille
+        worksheet = spreadsheet.sheet1  # Accéder à la première feuille
 
         # Récupérer toutes les données de la feuille
         data = worksheet.get_all_records()
@@ -55,4 +55,4 @@ def is_valid(entry):
     return True  # Placeholder : Modifiez selon vos besoins
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000)  # Écoute sur toutes les interfaces à port 5000
