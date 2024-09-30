@@ -1,33 +1,58 @@
+import os
 from flask import Flask, request, jsonify
-import gspread
-import pandas as pd
+from flask_cors import CORS
+from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
-from clean_data import clean_data  # Importer la fonction de nettoyage
+import gspread
 
+# Charger les variables d'environnement à partir du fichier .env
+load_dotenv()
+
+# Initialiser l'application Flask
 app = Flask(__name__)
+CORS(app)
 
-# Configuration des autorisations pour accéder à Google Sheets
-scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-# app.py
-creds = ServiceAccountCredentials.from_json_keyfile_name('cleanappb/meta.json', scope)
-client = gspread.authorize(creds)
+# Récupérer le chemin du fichier de clés de service depuis les variables d'environnement
+service_account_file = os.getenv("GOOGLE_SERVICE_ACCOUNT_FILE")
 
-@app.route('/clean', methods=['POST'])
-def clean_file():
-    # Lire les données depuis Google Sheets
-    spreadsheet = client.open_by_key('1HH3zfcxtCgZOaov2fN-ZQisAAA5giXuD9iKF8Gyd9Xw')
-    worksheet = spreadsheet.sheet1
-    data = worksheet.get_all_records()
+# Définir les scopes pour l'API
+scope = ['https://www.googleapis.com/auth/spreadsheets']
 
-    # Créer un DataFrame et nettoyer les données
-    df = pd.DataFrame(data)
-    cleaned_df = clean_data(df)
+# Initialiser les credentials
+creds = ServiceAccountCredentials.from_json_keyfile_name(service_account_file, scope)
 
-    # Exporter les résultats dans un fichier Excel
-    output_file_path = 'C:\\Users\\PC\\Desktop\\metabase\\file1_cleaned.xlsx'
-    cleaned_df.to_excel(output_file_path, index=False)
+# Initialiser le client Google Sheets
+gc = gspread.authorize(creds)
 
-    return jsonify({"message": "Data cleaned successfully!", "file": output_file_path})
+@app.route('/get_data', methods=['GET'])
+def get_data():
+    try:
+        # Ouvrir la feuille de calcul par son nom
+        spreadsheet = gc.open("nom_de_votre_feuille")
+        worksheet = spreadsheet.sheet1
+
+        # Récupérer toutes les données de la feuille
+        data = worksheet.get_all_records()
+        return jsonify(data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/clean_data', methods=['POST'])
+def clean_data():
+    try:
+        # Récupérer les données envoyées par la requête
+        raw_data = request.json
+
+        # Exemple de nettoyage de données
+        cleaned_data = [entry for entry in raw_data if is_valid(entry)]
+        
+        return jsonify(cleaned_data), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def is_valid(entry):
+    # Ajoutez ici votre logique de validation pour les données
+    return True  # Placeholder : Modifiez selon vos besoins
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
